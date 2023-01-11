@@ -1,8 +1,11 @@
 import { contractAddresses, abi } from "../constants"
 import { useMoralis, useWeb3Contract } from "react-moralis"
 import { useEffect, useState } from "react"
-import { useNotification } from "web3uikit"
-import { ethers } from "ethers"
+import AdminHomepage from "./AdminHomepage"
+import SecretaryHomepage from "./SecretaryHomepage"
+import ProfessorHomepage from "./ProfessorHomepage"
+import StudentHomepage from "./StudentHomepage"
+import GuestHomepage from "./GuestHomepage"
 
 export default function UnictHomepage() {
     const { Moralis, isWeb3Enabled, account, chainId: chainIdHex } = useMoralis()
@@ -14,25 +17,12 @@ export default function UnictHomepage() {
         chainId in contractAddresses ? contractAddresses[chainId][lastContractAddress] : null
     const wallet = account
 
-    const [isAdmin, checkTheAdmin] = useState("0")
-    const [isStudent, checkStudent] = useState("0")
-    const [isProfessor, checkProf] = useState("0")
-    const [isSecretary, checkSecretary] = useState("0")
+    const [isAdmin, checkTheAdmin] = useState(false)
+    const [isStudent, checkStudent] = useState(false)
+    const [isProfessor, checkProf] = useState(false)
+    const [isSecretary, checkSecretary] = useState(false)
 
-    async function retrieveAddress() {
-        Moralis.User.currentAsync().then(function (user) {
-            var wallet1 = user.get("ethAddress")
-        })
-        // return wallet
-    }
-
-    /*
-    console.log(isInitialized)
-    if (isInitialized) {
-        wallet = Moralis.User.current().get("ethAddress")
-    } */
-
-    /* View Functions */
+    // View Functions
     const { runContractFunction: checkAdmin } = useWeb3Contract({
         abi: abi,
         contractAddress: DAOUnict_address, // specify the networkId
@@ -47,26 +37,84 @@ export default function UnictHomepage() {
         params: { PubKeyProf: wallet },
     })
 
+    const { runContractFunction: checkExistingSecretariat } = useWeb3Contract({
+        abi: abi,
+        contractAddress: DAOUnict_address,
+        functionName: "checkExistingSecretariat",
+        params: { PubKeySecretary: wallet },
+    })
+
+    const { runContractFunction: checkExistingStudent } = useWeb3Contract({
+        abi: abi,
+        contractAddress: DAOUnict_address,
+        functionName: "checkExistingStudent",
+        params: { PubKeyStudent: wallet },
+    })
+
     async function checkUser() {
         const checkAdminResult = await checkAdmin({
             onSuccess: (data) => console.log(data),
             onError: (error) => console.log(error),
         })
         checkTheAdmin(checkAdminResult)
+        const checkSecretaryResult = await checkExistingSecretariat({
+            onSuccess: (data) => console.log(data),
+            onError: (error) => console.log(error),
+        })
+        checkSecretary(checkSecretaryResult)
+        const checkProfessorResult = await checkExistingProfessor({
+            onSuccess: (data) => console.log(data),
+            onError: (error) => console.log(error),
+        })
+        checkProf(checkProfessorResult)
+        const checkStudentResult = await checkExistingStudent({
+            onSuccess: (data) => console.log(data),
+            onError: (error) => console.log(error),
+        })
+        checkStudent(checkStudentResult)
     }
 
     useEffect(() => {
         if (isWeb3Enabled) {
             checkUser()
-            console.log(checkExistingProfessor())
         }
-    }, [isWeb3Enabled])
+    }, [account])
+
+    function renderHomepage() {
+        if (isAdmin) {
+            console.log("render admin")
+            return <AdminHomepage />
+        } else if (isSecretary) {
+            console.log("render secretary")
+            return <SecretaryHomepage />
+        } else if (isProfessor) {
+            console.log("render prof")
+            return <ProfessorHomepage />
+        } else if (isStudent) {
+        } else {
+            // <GuestHomepage />
+        }
+        // document.getElementById("loginBtn").delete()
+    }
+    // isAdmin ? <AdminHomepage /> : null
+    // {isSecretary ? <SecretaryHomepage /> : null}
+
+    // <button id="loginBtn" onClick={renderHomepage}> Enter </button>
+
+    // <>{renderHomepage()}</>
 
     return (
         <div className="p-5">
-            <h1 className="py-4 px-4 font-bold text-3xl">Unict</h1>
             {DAOUnict_address ? (
-                <>{isAdmin ? <h1>Welcome admin!</h1> : <h1>Sorry not admin</h1>}</>
+                <>
+                    {isAdmin ? <AdminHomepage /> : null}
+                    {isSecretary ? <SecretaryHomepage /> : null}
+                    {isProfessor ? <ProfessorHomepage /> : null}
+                    {isStudent ? <StudentHomepage /> : null}
+                    {!isStudent && !isAdmin && !isProfessor && !isSecretary ? (
+                        <GuestHomepage />
+                    ) : null}
+                </>
             ) : (
                 <div>Please connect to a supported chain </div>
             )}
