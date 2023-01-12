@@ -1,6 +1,6 @@
 import { contractAddresses, abi } from "../constants"
 import { useMoralis, useWeb3Contract } from "react-moralis"
-import { Form, useNotification } from "web3uikit"
+import { Form, useNotification, Avatar } from "web3uikit"
 import { useEffect, useState } from "react"
 import Popup from "reactjs-popup"
 import "reactjs-popup/dist/index.css"
@@ -519,88 +519,109 @@ export default function StudentHomepage() {
 
     return (
         <div>
-            <h1 className="py-4 px-4 font-bold text-3xl mb-5">Welcome, {studentName}!</h1>
-            <Popup
-                trigger={
-                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-auto">
-                        Check a degree course
-                    </button>
-                }
-                position="right center"
-                contentStyle={{ width: "25%", height: "30%" }}
-            >
-                {popUpCheckDegreeCourse()}
-            </Popup>
-            <Popup
-                trigger={
-                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-10 ">
-                        Check a subject into a degree course
-                    </button>
-                }
-                position="right center"
-                contentStyle={{ width: "25%", height: "30%" }}
-            >
-                {popUpCheckSubjectIntoCourse()}
-            </Popup>
-            <Popup
-                trigger={
-                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-10 ">
-                        Info about a subject
-                    </button>
-                }
-                position="right center"
-                contentStyle={{ width: "25%", height: "30%" }}
-            >
-                {popUpInfoSubject()}
-            </Popup>
-            <div>
+            <h1 className="py-4 px-4 font-bold text-3xl mb-5 hover:animate-pulse">
+                Welcome, {studentName}!
+            </h1>
+            <span className="flex flex-row font-medium hover:text-sky-400 mt-10">
+                Subjects & degree courses info
+                <Avatar theme="image" image="https://img.icons8.com/color/512/info-squared.png" />
                 <Popup
                     trigger={
-                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-10 ">
-                            Booking to an exam
+                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-10">
+                            Check a degree course
                         </button>
                     }
                     position="right center"
                     contentStyle={{ width: "25%", height: "30%" }}
                 >
-                    {popUpRegisterToExam}
+                    {popUpCheckDegreeCourse()}
                 </Popup>
-                <button
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-10 ml-10"
-                    onClick={checkCfuAcquired}
+                <Popup
+                    trigger={
+                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-10 ">
+                            Check a subject into a degree course
+                        </button>
+                    }
+                    position="right center"
+                    contentStyle={{ width: "25%", height: "30%" }}
                 >
-                    Check your CFU
-                </button>
-                <button
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-10 ml-10"
-                    onClick={checkSubjectDone}
+                    {popUpCheckSubjectIntoCourse()}
+                </Popup>
+                <Popup
+                    trigger={
+                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-10 ">
+                            Info about a subject
+                        </button>
+                    }
+                    position="right center"
+                    contentStyle={{ width: "25%", height: "30%" }}
                 >
-                    Check your career
-                </button>
+                    {popUpInfoSubject()}
+                </Popup>
+            </span>
+            <div>
+                <span className="flex flex-row font-medium hover:text-sky-400 mt-10">
+                    Exams & carrier management
+                    <Avatar
+                        theme="image"
+                        image="https://img.icons8.com/ultraviolet/512/test-partial-passed.png"
+                    />
+                    <Popup
+                        trigger={
+                            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-12">
+                                Booking to an exam
+                            </button>
+                        }
+                        position="right center"
+                        contentStyle={{ width: "25%", height: "30%" }}
+                    >
+                        {popUpRegisterToExam}
+                    </Popup>
+                    <button
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-10"
+                        onClick={checkCfuAcquired}
+                    >
+                        Check your CFU
+                    </button>
+                    <button
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-10"
+                        onClick={checkSubjectDone}
+                    >
+                        Check your career
+                    </button>
+                </span>
             </div>
             <div>
-                <Popup
-                    trigger={
-                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-10 ">
-                            Info about a professor
-                        </button>
-                    }
-                    position="top"
-                    contentStyle={{ width: "25%", height: "30%" }}
-                >
-                    {popUpInfoProfessor()}
-                </Popup>
-                <Popup
-                    trigger={
-                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-10 ml-10">
-                            Info about a secretariat
-                        </button>
-                    }
-                    position="top"
-                    contentStyle={{ width: "25%", height: "30%" }}
-                >
-                    {popUpInfoSecretary()}
-                </Popup>
+                <span className="flex flex-row font-medium hover:text-sky-400 mt-10">
+                    Profs & secretariats info
+                    <Avatar
+                        theme="image"
+                        image="https://img.icons8.com/plasticine/512/teacher.png"
+                        isRounded="true"
+                    />
+                    <Popup
+                        trigger={
+                            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-24">
+                                Info about a professor
+                            </button>
+                        }
+                        position="top"
+                        contentStyle={{ width: "25%", height: "30%" }}
+                    >
+                        {popUpInfoProfessor()}
+                    </Popup>
+                    <Popup
+                        trigger={
+                            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-10">
+                                Info about a secretariat
+                            </button>
+                        }
+                        position="top"
+                        contentStyle={{ width: "25%", height: "30%" }}
+                    >
+                        {popUpInfoSecretary()}
+                    </Popup>
+                </span>
             </div>
         </div>
     )
