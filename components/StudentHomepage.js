@@ -188,9 +188,7 @@ export default function StudentHomepage() {
 
         await runContractFunction({
             params: options,
-            onSuccess: {
-                handleRegisterToExamSuccess,
-            },
+            onSuccess: handleRegisterToExamSuccess,
             onError: (error) => {
                 console.log(error)
                 window.alert("Error! Please check the inserted subject's code for your booking")
@@ -198,6 +196,7 @@ export default function StudentHomepage() {
         })
     }
     async function handleRegisterToExamSuccess(tx) {
+        getCodeBookingExam
         await tx.wait(1)
         dispatch({
             type: "success",
@@ -205,7 +204,6 @@ export default function StudentHomepage() {
             title: "Booking to exam",
             position: "topL",
         })
-        getCodeBookingExam
     }
 
     async function getCodeBookingExam() {

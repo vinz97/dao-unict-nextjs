@@ -223,16 +223,16 @@ export default function ProfessorHomepage() {
         const options = {
             abi: abi,
             contractAddress: DAOUnict_address,
-            functionName: "addStudent",
+            functionName: "checkStudentExamBooking",
             params: {
                 bookingCode: codeBook,
             },
         }
 
-        const notificationInfoSubject = () => {
+        const notificationInfoSubject = (data) => {
             dispatch({
                 type: "success",
-                message: "The exam booking's code is valid",
+                message: data.join("\r\n"),
                 title: "Checking exam booking",
                 position: "topL",
             })
@@ -241,8 +241,7 @@ export default function ProfessorHomepage() {
         await runContractFunction({
             params: options,
             onSuccess: (data) => {
-                notificationInfoSubject()
-                console.log(data)
+                notificationInfoSubject(data)
             },
             onError: (error) => {
                 console.log(error)
