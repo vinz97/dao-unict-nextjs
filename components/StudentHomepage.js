@@ -188,9 +188,8 @@ export default function StudentHomepage() {
 
         await runContractFunction({
             params: options,
-            onSuccess: (data) => {
-                console.log(data)
-                handleRegisterToExamSuccess
+            onSuccess: {
+                handleRegisterToExamSuccess,
             },
             onError: (error) => {
                 console.log(error)
@@ -205,6 +204,36 @@ export default function StudentHomepage() {
             message: "Dear student, your booking was registered succesfully!",
             title: "Booking to exam",
             position: "topL",
+        })
+        getCodeBookingExam
+    }
+
+    async function getCodeBookingExam() {
+        const options = {
+            abi: abi,
+            contractAddresses: DAOUnict_address,
+            functionName: "getCodeBookingForExam",
+            params: {},
+        }
+
+        const notificationGetCodeBooking = (data) => {
+            dispatch({
+                type: "success",
+                message: "Your code booking for the exam is: " + data,
+                title: "Keep this code to show it to the prof",
+                position: "topL",
+            })
+        }
+
+        await runContractFunction({
+            params: options,
+            onSuccess: (data) => {
+                notificationGetCodeBooking(data)
+            },
+            onError: (error) => {
+                console.log(error)
+                window.alert("Generic error")
+            },
         })
     }
 
