@@ -1,13 +1,15 @@
 import { contractAddresses, abi } from "../constants"
 import { useMoralis, useWeb3Contract } from "react-moralis"
 import { useEffect, useState } from "react"
-import { Form, useNotification, Avatar } from "web3uikit"
+import { Form, useNotification, Avatar, Image } from "web3uikit"
 import Popup from "reactjs-popup"
 import "reactjs-popup/dist/index.css"
+import { ThirdwebStorage } from "@thirdweb-dev/storage"
 
 export default function SecretaryHomepage() {
     const { isWeb3Enabled, account, chainId: chainIdHex } = useMoralis()
     const { runContractFunction, isLoading, isFetching } = useWeb3Contract()
+    const st = new ThirdwebStorage()
 
     const dispatch = useNotification()
     const chainId = parseInt(chainIdHex)
@@ -16,6 +18,7 @@ export default function SecretaryHomepage() {
         chainId in contractAddresses ? contractAddresses[chainId][lastContractAddress] : null
 
     const [areaSecretariat, setAreaSecretariat] = useState("")
+    const [file, setFile] = useState()
 
     async function infoSecretaryExecution() {
         const secretaryAddress = account
@@ -420,7 +423,7 @@ export default function SecretaryHomepage() {
             contractAddress: DAOUnict_address,
             functionName: "infoExistingStudent",
             params: {
-                PubKeySecretary: studentAddress,
+                PubKeyStudent: studentAddress,
             },
         }
 
@@ -477,6 +480,116 @@ export default function SecretaryHomepage() {
                 console.log(error)
                 window.alert("Error! Maybe the inserted address is not valid")
             },
+        })
+    }
+
+    async function uploadDegreeCertificateExecution(data) {
+        const studName = data.data[0].inputResult
+        const studSurname = data.data[1].inputResult
+        const studDegreeCourse = data.data[2].inputResult
+        const studGrade = data.data[3].inputResult
+
+        const descr = "This certificate belongs to " + studName + " " + studSurname
+
+        const metadata = {
+            name: "NFT Degree Certificate UNICT",
+            description: "",
+            image: file,
+            properties: [
+                {
+                    degreeCourse: studDegreeCourse,
+                    grade: studGrade,
+                },
+            ],
+        }
+
+        metadata.description = descr
+
+        const uploadUrl = await st.upload(metadata)
+        dispatch({
+            type: "success",
+            message:
+                "The degree certificate was succesfully uploaded! \n" +
+                "IMPORTANT: take note of the IPFS url " +
+                "below. You need it for create the nft and associate it for the student! \n" +
+                uploadUrl,
+            title: "Upload degree certificate to IPFS",
+            position: "topL",
+        })
+        //    alert(
+        //        "The degree certificate was succesfully uploaded! \n" +
+        //            "IMPORTANT: take note of the IPFS url" +
+        //            "below. You need it for create the nft and associate it for the student! \n" +
+        //            uploadUrl
+        //    )
+    }
+
+    async function associateNftExecution(data) {
+        const NftUrl = data.data[0].inputResult
+        const studAddress = data.data[1].inputResult
+
+        const options = {
+            abi: abi,
+            contractAddress: DAOUnict_address,
+            functionName: "associateDegreeNft",
+            params: {
+                urlNft: NftUrl,
+                studentAddr: studAddress,
+            },
+        }
+
+        await runContractFunction({
+            params: options,
+            onSuccess: handleAssociateNft,
+            onError: (error) => {
+                console.log(error)
+                window.alert("Error: please check if the address belongs to a student")
+            },
+        })
+    }
+    async function handleAssociateNft(tx) {
+        await tx.wait(1)
+        dispatch({
+            type: "success",
+            message: "The NFT degree certification was succesfully to the student!",
+            title: "Associate NFT degree",
+            position: "topL",
+        })
+    }
+
+    async function viewNftExecution(data) {
+        const studAddress = data.data[0].inputResult
+
+        const options = {
+            abi: abi,
+            contractAddress: DAOUnict_address,
+            functionName: "getDegreeCertificateNft",
+            params: {
+                studAddr: studAddress,
+            },
+        }
+
+        await runContractFunction({
+            params: options,
+            onSuccess: (data) => {
+                handleViewNftSuccess(data)
+            },
+            onError: (error) => {
+                console.log(error)
+                window.alert("Error: this address doesn't belong to a graduate student")
+            },
+        })
+    }
+    async function handleViewNftSuccess(data) {
+        const nftUri = data.replace("ipfs://", "https://cloudflare-ipfs.com/ipfs/")
+        const nftURIResponse = await (await fetch(nftUri)).json()
+        const imageURI = nftURIResponse.image
+        const imageURIURL = imageURI.replace("ipfs://", "https://cloudflare-ipfs.com/ipfs/")
+        dispatch({
+            type: "success",
+            message: "Follow this link to see the NFT certificate: " + imageURIURL,
+            title: "View student's NFT degree",
+            position: "topL",
         })
     }
 
@@ -855,6 +968,129 @@ export default function SecretaryHomepage() {
         )
     }
 
+    function popUploadDegreeCertificate() {
+        return (
+            <div>
+                <input
+                    type="file"
+                    className="block w-full text-sm text-slate-500
+                  file:mr-4 file:py-2 file:px-4
+                  file:rounded-full file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-violet-50 file:text-violet-700
+                  hover:file:bg-violet-100"
+                    onChange={(e) => setFile(e.target.files[0])}
+                />
+                <Form
+                    buttonConfig={{
+                        text: "Upload degree certificate",
+                        theme: "primary",
+                    }}
+                    data={[
+                        {
+                            key: "StudentName",
+                            name: "Student name",
+                            type: "text",
+                            validation: {
+                                required: true,
+                            },
+                            value: "",
+                        },
+                        {
+                            key: "StudentSurname",
+                            name: "Surname student",
+                            type: "text",
+                            validation: {
+                                required: true,
+                            },
+                            value: "",
+                        },
+                        {
+                            key: "StudentDegreeCourse",
+                            name: "Student's degree course",
+                            type: "text",
+                            validation: {
+                                required: true,
+                            },
+                            value: "",
+                        },
+                        {
+                            key: "StudentGrade",
+                            name: "Grade",
+                            type: "number",
+                            validation: {
+                                required: true,
+                            },
+                            value: "",
+                        },
+                    ]}
+                    onSubmit={uploadDegreeCertificateExecution}
+                    title="Upload now"
+                    isDisabled={isLoading || isFetching}
+                />
+            </div>
+        )
+    }
+
+    function popUpAssociateNft() {
+        return (
+            <Form
+                buttonConfig={{
+                    text: "Associate NFT to student",
+                    theme: "primary",
+                }}
+                data={[
+                    {
+                        key: "NFTUrl",
+                        name: "Certificate IPFS Url",
+                        type: "text",
+                        validation: {
+                            required: true,
+                        },
+                        value: "",
+                    },
+                    {
+                        key: "StudentAddress",
+                        name: "Student public key",
+                        type: "text",
+                        validation: {
+                            required: true,
+                        },
+                        value: "",
+                    },
+                ]}
+                onSubmit={associateNftExecution}
+                title="Create NFT"
+                isDisabled={isLoading || isFetching}
+            />
+        )
+    }
+
+    function popUpViewNft() {
+        return (
+            <Form
+                buttonConfig={{
+                    text: "View student's certificate",
+                    theme: "primary",
+                }}
+                data={[
+                    {
+                        key: "StudentAddress",
+                        name: "Student public key",
+                        type: "text",
+                        validation: {
+                            required: true,
+                        },
+                        value: "",
+                    },
+                ]}
+                onSubmit={viewNftExecution}
+                title="View NFT"
+                isDisabled={isLoading || isFetching}
+            />
+        )
+    }
+
     return (
         <div>
             <h1 className="py-4 px-4 font-bold text-3xl mb-5 hover:animate-pulse">
@@ -1014,6 +1250,74 @@ export default function SecretaryHomepage() {
                     </Popup>
                 </span>
             </div>
+            <div>
+                <span className="flex flex-row font-medium hover:text-sky-400 mt-10">
+                    Degree certificate NFT
+                    <Avatar
+                        theme="image"
+                        image="https://img.icons8.com/color-glass/512/nft-artwork.png"
+                        isRounded="true"
+                    />
+                    <Popup
+                        trigger={
+                            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-24">
+                                Upload degree certificate
+                            </button>
+                        }
+                        position="top"
+                        contentStyle={{ width: "25%", height: "70%" }}
+                    >
+                        {popUploadDegreeCertificate()}
+                    </Popup>
+                    <Popup
+                        trigger={
+                            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-10">
+                                Associate NFT degree to student
+                            </button>
+                        }
+                        position="top"
+                        contentStyle={{ width: "25%", height: "30%" }}
+                    >
+                        {popUpAssociateNft()}
+                    </Popup>
+                    <Popup
+                        trigger={
+                            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-10">
+                                View student's NFT degree
+                            </button>
+                        }
+                        position="top"
+                        contentStyle={{ width: "25%", height: "30%" }}
+                    >
+                        {popUpViewNft()}
+                    </Popup>
+                </span>
+            </div>
         </div>
     )
 }
+
+/* 
+
+    const uploadToIpfs = async () => {
+        const metadata = {
+            name: "NFT #1",
+            description: "This is my first NFT",
+            image: file,
+            properties: [
+                {
+                    name: "coolness",
+                    value: "very cool",
+                },
+            ],
+        }
+
+        const uploadUrl = await st.upload(metadata)
+        alert(uploadUrl)
+    }
+
+
+
+    <input type="file" onChange={(e) => setFile(e.target.files[0])} />
+    <button onClick={uploadToIpfs}>Upload</button>
+*/

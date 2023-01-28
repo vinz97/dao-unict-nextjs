@@ -367,6 +367,40 @@ export default function StudentHomepage() {
         })
     }
 
+    async function viewNftExecution() {
+        const options = {
+            abi: abi,
+            contractAddress: DAOUnict_address,
+            functionName: "getDegreeCertificateNft",
+            params: {
+                studAddr: account,
+            },
+        }
+
+        await runContractFunction({
+            params: options,
+            onSuccess: (data) => {
+                handleViewNftSuccess(data)
+            },
+            onError: (error) => {
+                console.log(error)
+                window.alert("Error: you need to graduate for view your NFT degree certificate!")
+            },
+        })
+    }
+    async function handleViewNftSuccess(data) {
+        const nftUri = data.replace("ipfs://", "https://cloudflare-ipfs.com/ipfs/")
+        const nftURIResponse = await (await fetch(nftUri)).json()
+        const imageURI = nftURIResponse.image
+        const imageURIURL = imageURI.replace("ipfs://", "https://cloudflare-ipfs.com/ipfs/")
+        dispatch({
+            type: "success",
+            message: "Follow this link to see the NFT certificate: " + imageURIURL,
+            title: "View your NFT degree certificate",
+            position: "topL",
+        })
+    }
+
     function popUpCheckSubjectIntoCourse() {
         return (
             <Form
@@ -615,6 +649,12 @@ export default function StudentHomepage() {
                         onClick={checkSubjectDone}
                     >
                         Check your career
+                    </button>
+                    <button
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-10"
+                        onClick={viewNftExecution}
+                    >
+                        View your NFT degree certificate
                     </button>
                 </span>
             </div>
